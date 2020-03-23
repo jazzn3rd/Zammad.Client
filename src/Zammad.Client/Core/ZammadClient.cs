@@ -23,10 +23,13 @@ namespace Zammad.Client.Core
         {
             using (var httpClient = CreateHttpClient())
             {
-                var httpResponse = await httpClient.SendAsync(httpRequest);
+               			 var httpResponse = await httpClient.SendAsync(httpRequest);
                 if (httpResponse.IsSuccessStatusCode == false)
                 {
-                    throw new ZammadException(httpRequest, httpResponse);
+                    throw new Exception($"{httpResponse.ReasonPhrase} \n {await httpResponse.Content.ReadAsStringAsync()} \n {await httpRequest.Content.ReadAsStringAsync()}");
+
+
+                   // throw new ZammadException(httpRequest, httpResponse);
                 }
                 return httpResponse;
             }
@@ -39,12 +42,21 @@ namespace Zammad.Client.Core
 
         private HttpClientHandler CreateHttpHandler()
         {
+            HttpClientHandler result;
             switch (_account.Authentication)
             {
-                case ZammadAuthentication.Basic: return new BasicHttpClientHandler(_account.User, _account.Password, _account.OnBehalfOf);
-                case ZammadAuthentication.Token: return new TokenHttpClientHandler(_account.Token, _account.OnBehalfOf);
+                case ZammadAuthentication.Basic: 
+                    result = new BasicHttpClientHandler(_account.User, _account.Password, _account.OnBehalfOf);
+                    break;
+                case ZammadAuthentication.Token: 
+                    result = new TokenHttpClientHandler(_account.Token, _account.OnBehalfOf);
+                    break;
                 default: throw new NotImplementedException();
             }
+
+            result.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+
+            return result;
         }
 
         protected HttpResponseParser NewParser(HttpResponseMessage httpResponse)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -12,6 +12,9 @@ namespace Zammad.Client.Resources
 
         [JsonProperty("name")]
         public string Name { get; set; }
+
+        [JsonProperty("customercode")]
+        public string CustomerCode { get; set; }
 
         [JsonProperty("shared")]
         public bool Shared { get; set; }
